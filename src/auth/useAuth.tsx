@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useContext, createContext, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +25,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Utility to map DB role to frontend role
+  const mapDbRoleToUserProfileRole = (dbRole: string | null): UserProfile["role"] => {
+    if (dbRole === "superadmin") return "superadmin";
+    if (dbRole === "admin") return "owner";
+    if (dbRole === "user") return "employee";
+    return null;
+  };
+
   const fetchProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -37,7 +44,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfile(null);
       return;
     }
-    setProfile(data);
+    if (!data) {
+      setProfile(null);
+      setError("Profile not found.");
+      return;
+    }
+    setProfile({
+      id: data.id,
+      name: data.name,
+      role: mapDbRoleToUserProfileRole(data.role),
+    });
     setError(null);
   }, []);
 
