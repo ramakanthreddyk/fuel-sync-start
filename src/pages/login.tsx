@@ -12,11 +12,16 @@ const Login = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Redirect if the profile is loaded
   useEffect(() => {
     if (profile?.role === "superadmin") navigate("/superadmin", { replace: true });
     else if (profile?.role === "owner") navigate("/owner", { replace: true });
     else if (profile?.role === "employee") navigate("/employee", { replace: true });
-  }, [profile, navigate]);
+    else if (!loading && session && !profile) {
+      // If loading ended, session exists but profile doesn't, probably profile fetch failed
+      setFormError("Profile not found. Please contact support.");
+    }
+  }, [profile, loading, session, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

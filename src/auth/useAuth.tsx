@@ -39,14 +39,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .select("id, name, role")
       .eq("id", userId)
       .maybeSingle();
-    if (error) {
-      setError("Failed to fetch user profile.");
+    if (error || !data) {
+      setError("Profile not found. Please contact support.");
       setProfile(null);
-      return;
-    }
-    if (!data) {
-      setProfile(null);
-      setError("Profile not found.");
       return;
     }
     setProfile({
