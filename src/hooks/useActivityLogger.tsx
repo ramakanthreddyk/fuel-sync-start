@@ -1,5 +1,4 @@
-
-import { useAuth } from "./useAuth";
+import { useAuth } from "@/auth/useAuth";
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,9 +27,8 @@ export function useActivityLogger() {
       if (!station_id && user.stations && user.stations.length > 0) {
         station_id = user.stations[0]?.id;
       }
-      // Insert new row in user_activity_log using correct types
-      // user.id is now uuid (string), matches user_activity_log
-      const { error } = await supabase.from("user_activity_log").insert({
+      // Use explicit any to allow inserting into custom tables
+      const { error } = await supabase.from<any>("user_activity_log").insert({
         user_id: user.id, // uuid string
         station_id: station_id ?? null,
         activity_type: activityType,

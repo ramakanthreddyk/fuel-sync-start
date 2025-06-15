@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
 } from '@/components/ui/sidebar';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { 
   Home, 
   Upload, 

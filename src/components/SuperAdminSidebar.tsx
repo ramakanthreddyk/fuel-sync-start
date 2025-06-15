@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -14,7 +13,7 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { Users, Building2, UserPlus, BarChart3, LogOut, Settings, Crown } from 'lucide-react';
 import FuelSyncLogo from './FuelSyncLogo';
 

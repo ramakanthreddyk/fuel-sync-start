@@ -24,7 +24,7 @@ export function useFuelPricesData() {
       }
 
       let query = supabase
-        .from('fuel_prices')
+        .from<any>('fuel_prices')
         .select('*')
         .order('valid_from', { ascending: false });
 
@@ -35,10 +35,9 @@ export function useFuelPricesData() {
       const { data, error } = await query;
 
       if (error) throw error;
-      
-      // Get latest price for each fuel type per station
+
       const latestPrices = new Map<string, FuelPrice>();
-      
+
       data?.forEach((price: FuelPrice) => {
         const key = `${price.station_id}-${price.fuel_type}`;
         if (!latestPrices.has(key)) {

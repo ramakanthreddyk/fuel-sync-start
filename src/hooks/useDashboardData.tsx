@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = "https://untzkhbbsowpkmwrxdws.supabase.co";
@@ -15,7 +15,7 @@ interface DashboardData {
     date: string;
     sales: number;
     tender: number;
-  }>;
+  }>[];
   fuelPrices: {
     PETROL?: number;
     DIESEL?: number;
@@ -28,7 +28,7 @@ interface DashboardData {
     message: string;
     severity: 'low' | 'medium' | 'high';
     tags: string[];
-  }>;
+  }>[];
   premiumRequired?: boolean;
 }
 
@@ -125,14 +125,13 @@ export const useDashboardData = () => {
 
       // Get total readings count
       const { count: readingsCount } = await supabase
-        .from('ocr_readings')
+        .from<any>('ocr_readings')
         .select('*', { count: 'exact', head: true })
         .eq('station_id', currentStation.id);
-      console.log("Total readings count:", readingsCount);
 
       // Get last reading time
       const { data: lastReadingData } = await supabase
-        .from('ocr_readings')
+        .from<any>('ocr_readings')
         .select('created_at')
         .eq('station_id', currentStation.id)
         .order('created_at', { ascending: false })

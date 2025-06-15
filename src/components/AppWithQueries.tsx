@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useQuery } from "@tanstack/react-query";
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { AuthProvider, useAuth } from '@/auth/useAuth';
 import { RequireRole } from '@/components/RequireRole';
-import { SuperAdminLayout } from '@/layouts/SuperAdminLayout';
+import { SuperAdminLayout } from '@/pages/SuperAdmin'; // This is correct if index.ts exports it
 import { 
   UsersPage, 
   StationsPage, 

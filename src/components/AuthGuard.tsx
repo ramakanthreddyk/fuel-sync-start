@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/auth/useAuth';
 import Login from '@/pages/Login';
 
 interface AuthGuardProps {

@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/auth/useAuth';
 
 interface AppLayoutProps {
   children: React.ReactNode;
