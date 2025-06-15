@@ -1,13 +1,14 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/auth/useAuth';
-import Login from '@/pages/Login';
+import Login from '@/pages/login';
 
 interface AuthGuardProps {
   children: React.ReactNode;
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -17,7 +18,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
+  if (!profile) {
     return <Login />;
   }
 

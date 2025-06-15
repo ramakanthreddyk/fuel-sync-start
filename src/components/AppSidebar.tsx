@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -31,13 +32,13 @@ import FuelSyncLogo from './FuelSyncLogo';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export function AppSidebar() {
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth();
   const location = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
 
   // This sidebar is ONLY for owners and employees
   // Superadmins should never see this - they have their own layout
-  if (user?.role === 'superadmin') {
+  if (profile?.role === 'superadmin') {
     return null;
   }
 
@@ -75,7 +76,7 @@ export function AppSidebar() {
   ];
 
   // Add admin items for owners only
-  if (user?.role === 'owner') {
+  if (profile?.role === 'owner') {
     menuItems.push(
       {
         title: "Manage Users",

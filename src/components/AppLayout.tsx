@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -10,10 +11,10 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const { user } = useAuth();
+  const { profile } = useAuth();
 
   // Superadmins should never see this layout - redirect them
-  if (user?.role === 'superadmin') {
+  if (profile?.role === 'superadmin') {
     return <Navigate to="/superadmin/users" replace />;
   }
 

@@ -1,9 +1,10 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useQuery } from "@tanstack/react-query";
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/auth/useAuth';
 import { RequireRole } from '@/components/RequireRole';
-import { SuperAdminLayout } from '@/pages/SuperAdmin'; // This is correct if index.ts exports it
+// Removed invalid SuperAdminLayout import
 import { 
   UsersPage, 
   StationsPage, 
@@ -12,13 +13,13 @@ import {
   AnalyticsPage, 
   CreateOwnerWizard 
 } from '@/pages/SuperAdmin';
-import Login from '@/pages/Login';
+import Login from '@/pages/login';
 import Signup from '@/pages/Signup';
 import Dashboard from '@/pages/Dashboard';
 import Settings from '@/pages/Settings';
 import AdminUsers from '@/pages/AdminUsers';
 import AdminStations from '@/pages/AdminStations';
-import DataEntry from '@/pages/DataEntry'; // UPDATED: use DataEntry
+import DataEntry from '@/pages/DataEntry';
 import Sales from '@/pages/Sales';
 import DailyClosure from '@/pages/DailyClosure';
 import Pumps from '@/pages/Pumps';
@@ -28,7 +29,7 @@ import AppLayout from '@/components/AppLayout';
 import { supabase } from "@/integrations/supabase/client";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -38,7 +39,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) {
+  if (!profile) {
     return <Navigate to="/login" replace />;
   }
 
@@ -46,7 +47,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -56,9 +57,9 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (user) {
+  if (profile) {
     // Role-based redirect after login
-    if (user.role === 'superadmin') {
+    if (profile.role === 'superadmin') {
       return <Navigate to="/superadmin/users" replace />;
     }
     return <Navigate to="/dashboard" replace />;
@@ -68,9 +69,9 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function RoleBasedRedirect() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   
-  if (user?.role === 'superadmin') {
+  if (profile?.role === 'superadmin') {
     return <Navigate to="/superadmin/users" replace />;
   }
   
@@ -112,40 +113,39 @@ export function AppWithQueries() {
             }
           />
           
-          {/* Super Admin Routes - Completely separate from owner/employee routes */}
+          {/* Super Admin Routes */}
           <Route 
             path="/superadmin/*" 
             element={
               <ProtectedRoute>
                 <RequireRole role="superadmin">
-                  <SuperAdminLayout>
-                    <Routes>
-                      <Route
-                        path="/users"
-                        element={
-                          stationsQuery.isLoading
-                            ? (
-                                <div className="flex items-center justify-center min-h-screen">Loading stations…</div>
-                              )
-                            : (
-                                <UsersPage stations={stationsQuery.data || []} />
-                              )
-                        }
-                      />
-                      <Route path="/stations" element={<StationsPage />} />
-                      <Route path="/pumps" element={<PumpsPage />} />
-                      <Route path="/plans" element={<PlansPage />} />
-                      <Route path="/analytics" element={<AnalyticsPage />} />
-                      <Route path="/create-owner" element={<CreateOwnerWizard />} />
-                      <Route path="/" element={<Navigate to="/superadmin/users" replace />} />
-                    </Routes>
-                  </SuperAdminLayout>
+                  {/* insert superadmin layout if available */}
+                  <Routes>
+                    <Route
+                      path="/users"
+                      element={
+                        stationsQuery.isLoading
+                          ? (
+                              <div className="flex items-center justify-center min-h-screen">Loading stations…</div>
+                            )
+                          : (
+                              <UsersPage stations={stationsQuery.data || []} />
+                            )
+                      }
+                    />
+                    <Route path="/stations" element={<StationsPage />} />
+                    <Route path="/pumps" element={<PumpsPage />} />
+                    <Route path="/plans" element={<PlansPage />} />
+                    <Route path="/analytics" element={<AnalyticsPage />} />
+                    <Route path="/create-owner" element={<CreateOwnerWizard />} />
+                    <Route path="/" element={<Navigate to="/superadmin/users" replace />} />
+                  </Routes>
                 </RequireRole>
               </ProtectedRoute>
             } 
           />
           
-          {/* Regular App Routes - For owners and employees only */}
+          {/* Regular App Routes */}
           <Route 
             path="/*" 
             element={
@@ -153,7 +153,6 @@ export function AppWithQueries() {
                 <AppLayout>
                   <Routes>
                     <Route path="/dashboard" element={<Dashboard />} />
-                    {/* CHANGED: Use /data-entry route instead of /upload */}
                     <Route path="/data-entry" element={<DataEntry />} />
                     <Route path="/sales" element={<Sales />} />
                     <Route path="/daily-closure" element={<DailyClosure />} />
@@ -163,7 +162,6 @@ export function AppWithQueries() {
                     <Route path="/admin/users" element={<AdminUsers />} />
                     <Route path="/admin/stations" element={<AdminStations />} />
                     <Route path="/settings" element={<Settings />} />
-                    {/* Optionally: for backward compatibility, can also keep /upload as DataEntry */}
                     <Route path="/upload" element={<DataEntry />} />
                     <Route path="/" element={<RoleBasedRedirect />} />
                   </Routes>

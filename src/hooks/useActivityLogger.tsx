@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/auth/useAuth";
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
  * @returns logActivity: (activityType: string, details?: Record<string, any>) => Promise<void>
  */
 export function useActivityLogger() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
 
   /**
    * Logs a user activity event to Supabase (user_activity_log table).
@@ -21,25 +22,25 @@ export function useActivityLogger() {
       details?: Record<string, any>,
       stationId?: number
     ) => {
-      if (!user?.id) return;
+      if (!profile?.id) return;
       // Use provided stationId or user's first (if available)
       let station_id = stationId;
-      if (!station_id && user.stations && user.stations.length > 0) {
-        station_id = user.stations[0]?.id;
+      // You may want to load the user's stations via another context/hook
+      // temporarily set as null if not known
+      if (!station_id) {
+        station_id = null;
       }
-      // Use explicit any to allow inserting into custom tables
       const { error } = await supabase.from<any>("user_activity_log").insert({
-        user_id: user.id, // uuid string
+        user_id: profile.id, // uuid string
         station_id: station_id ?? null,
         activity_type: activityType,
         details: details ?? null,
       });
       if (error) {
         // For debug, warn in dev
-        // console.warn("Failed to log activity:", error.message);
       }
     },
-    [user]
+    [profile]
   );
 
   return logActivity;

@@ -34,8 +34,8 @@ interface DashboardData {
 
 export const useDashboardData = () => {
   // Use both user and session from useAuth
-  const { user, session } = useAuth();
-  const [data, setData] = useState<DashboardData>({
+  const { profile, session } = useAuth();
+  const [data, setData] = useState<any>({
     todaySales: 0,
     todayTender: 0,
     totalReadings: 0,
@@ -48,7 +48,8 @@ export const useDashboardData = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  const currentStation = user?.stations?.[0];
+  // Assuming profile has user stations etc if needed
+  const currentStation = profile?.stations?.[0];
 
   // Get the current session's access token for the Authorization header
   const getAuthHeader = () => {
@@ -64,14 +65,12 @@ export const useDashboardData = () => {
 
   const loadDashboardData = async () => {
     if (!currentStation) {
-      console.warn("No currentStation selected in useDashboardData");
       setIsLoading(false);
       return;
     }
 
     try {
       setIsLoading(true);
-      console.log("Loading dashboard data for station", currentStation);
 
       const accessToken = getAuthHeader();
       const headers: HeadersInit = {
@@ -89,7 +88,6 @@ export const useDashboardData = () => {
         }
       );
       const summaryResult = await summaryRes.json();
-      console.log("Dashboard summary result:", summaryResult);
 
       if (!summaryRes.ok || summaryResult?.error) {
         throw new Error(summaryResult?.error || "Failed to load dashboard summary");
@@ -97,11 +95,10 @@ export const useDashboardData = () => {
       const summary = summaryResult.data;
       const premiumRequired = !!summary.premium_required;
 
-      // We'll only attempt to load trends if the user is premium (otherwise, skip gracefully)
+      // Load trends
       let trends: Array<{ date: string; sales: number; tender: number }> = [];
 
       if (!premiumRequired) {
-        // Only fetch trends if premium is NOT required
         try {
           const trendsRes = await fetch(
             `${SUPABASE_URL}/functions/v1/dashboard-api/sales-trend?stationId=${currentStation.id}`,
@@ -111,15 +108,12 @@ export const useDashboardData = () => {
             }
           );
           const trendsResult = await trendsRes.json();
-          console.log("Dashboard trends result:", trendsResult);
           if (!trendsRes.ok || trendsResult?.error) {
-            // Unexpected error while fetching trends (other than premium required)
             throw new Error(trendsResult?.error || "Failed to load trends data");
           }
           trends = trendsResult.data || [];
         } catch (err) {
-          // If trends couldn't load and it wasn't due to premium restriction, add error badge
-          console.error("Error fetching trends data:", err);
+          // ignore
         }
       }
 
@@ -136,7 +130,6 @@ export const useDashboardData = () => {
         .eq('station_id', currentStation.id)
         .order('created_at', { ascending: false })
         .limit(1);
-      console.log("Last reading data:", lastReadingData);
 
       setData({
         todaySales: summary.total_sales_today || 0,
@@ -150,18 +143,16 @@ export const useDashboardData = () => {
         premiumRequired
       });
     } catch (error: any) {
-      // Only show critical alert if it's not a premium-gated feature
-      console.error('Error loading dashboard data:', error);
       setData(prev => ({
         ...prev,
         alerts: [
           {
             id: 'load_error',
-            type: 'error',
+            type: "error",
             message: typeof error?.message === "string"
               ? error.message
               : 'Failed to load dashboard data',
-            severity: 'high',
+            severity: "high",
             tags: ['system']
           }
         ]

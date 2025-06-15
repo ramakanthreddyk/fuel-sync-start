@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/auth/useAuth';
@@ -9,7 +10,7 @@ interface RequireRoleProps {
 }
 
 export function RequireRole({ role, children }: RequireRoleProps) {
-  const { user, loading } = useAuth();
+  const { profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -19,13 +20,13 @@ export function RequireRole({ role, children }: RequireRoleProps) {
     );
   }
 
-  if (!user) {
+  if (!profile) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== role) {
+  if (profile.role !== role) {
     // Redirect based on actual role
-    if (user.role === 'superadmin') {
+    if (profile.role === 'superadmin') {
       return <Navigate to="/superadmin/users" replace />;
     } else {
       return <Navigate to="/dashboard" replace />;
