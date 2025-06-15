@@ -1,6 +1,5 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { planLimitsService } from "@/services/planLimitsService";
 
 /**
  * useIsPremiumStation
@@ -11,9 +10,8 @@ export function useIsPremiumStation(stationId?: number) {
     queryKey: ["plan-limits", stationId],
     queryFn: async () => {
       if (!stationId) return false;
-      const limits = await planLimitsService.getPlanLimits(stationId);
-      // Premium if OCR is not unbounded (i.e. has OCR allowed)
-      return !!limits.maxOcrMonthly;
+      // Temporarily always return false, since planLimitsService is missing.
+      return false;
     },
     enabled: !!stationId,
   });

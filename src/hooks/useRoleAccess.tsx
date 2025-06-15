@@ -1,5 +1,4 @@
-
-import { useAuth } from './useAuth';
+import { useAuth } from '@/auth/useAuth';
 import { useMemo } from 'react';
 
 export interface StationAccess {
@@ -20,10 +19,10 @@ export interface RoleAccess {
 }
 
 export function useRoleAccess(): RoleAccess {
-  const { user } = useAuth();
+  const { profile } = useAuth();
 
   return useMemo(() => {
-    if (!user) {
+    if (!profile) {
       return {
         role: 'employee',
         canAccessAllStations: false,
@@ -35,11 +34,12 @@ export function useRoleAccess(): RoleAccess {
       };
     }
 
-    const role = user.role;
-    const stations = user.stations || [];
-    
+    // You may want to map real stations from another hook/service
+    const role = profile.role;
+    const stations = []; // TODO: integrate with stations table if needed
+
     return {
-      role,
+      role: role ?? 'employee',
       canAccessAllStations: role === 'superadmin',
       stations,
       currentStation: stations[0] || null,
@@ -47,5 +47,5 @@ export function useRoleAccess(): RoleAccess {
       isOwner: role === 'owner',
       isEmployee: role === 'employee',
     };
-  }, [user]);
+  }, [profile]);
 }

@@ -24,21 +24,20 @@ export function useActivityLogger() {
     ) => {
       if (!profile?.id) return;
       // Use provided stationId or user's first (if available)
-      let station_id = stationId;
-      // You may want to load the user's stations via another context/hook
-      // temporarily set as null if not known
-      if (!station_id) {
-        station_id = null;
-      }
-      const { error } = await supabase.from<any>("user_activity_log").insert({
-        user_id: profile.id, // uuid string
-        station_id: station_id ?? null,
-        activity_type: activityType,
-        details: details ?? null,
-      });
-      if (error) {
-        // For debug, warn in dev
-      }
+      let station_id = stationId ?? null;
+
+      await supabase
+        .from<any>("user_activity_log")
+        .insert([
+          {
+            user_id: profile.id,
+            station_id,
+            activity_type: activityType,
+            details: details ?? null,
+          },
+        ]);
+
+      // Could optionally check the error and log if needed
     },
     [profile]
   );

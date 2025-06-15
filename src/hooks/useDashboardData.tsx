@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useAuth } from "@/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,8 +49,9 @@ export const useDashboardData = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Assuming profile has user stations etc if needed
-  const currentStation = profile?.stations?.[0];
+  // TODO: use stations from a hook or from global state.
+  // For now, try to get it from a station selector or similar (hardcode as null if not present)
+  const currentStation = null;
 
   // Get the current session's access token for the Authorization header
   const getAuthHeader = () => {
@@ -135,7 +137,9 @@ export const useDashboardData = () => {
         todaySales: summary.total_sales_today || 0,
         todayTender: summary.total_tender_today || 0,
         totalReadings: readingsCount || 0,
-        lastReading: lastReadingData?.[0]?.created_at || null,
+        lastReading: (lastReadingData && lastReadingData.length > 0)
+          ? lastReadingData[0].created_at
+          : null,
         pendingClosures: summary.pending_closure_count || 0,
         trendsData: trends,
         fuelPrices: summary.fuel_prices || {},
