@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq("id", userId)
         .maybeSingle();
       if (fetchError || !data) {
-        console.error("fetchProfile error", fetchError, "data", data);
+        console.error("[Auth] fetchProfile error", fetchError, "data", data);
         setError("Profile not found. Please contact support.");
         setProfile(null);
         return null;
@@ -56,12 +56,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       setError("Failed to fetch user profile.");
       setProfile(null);
-      console.error("Exception in fetchProfile", err);
+      console.error("[Auth] Exception in fetchProfile", err);
       return null;
     }
   }, []);
 
-  // Session & profile sync
+  // Fix: Always set loading properly and log auth state changes
   useEffect(() => {
     let mounted = true;
     const getSessionAndProfile = async () => {
@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile(null);
       }
       setLoading(false);
+      console.log("[Auth] getSessionAndProfile:", { session: data?.session, profile });
     };
     getSessionAndProfile();
 
@@ -87,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setProfile(null);
       }
       setLoading(false);
+      console.log("[Auth] onAuthStateChange:", { session, profile });
     });
     return () => {
       mounted = false;
@@ -105,7 +107,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
         return;
       }
-      await fetchProfile(data.user.id);
+      await fetchProfile(data.user.id); // Profile will be loaded
       setLoading(false);
     } catch (err) {
       setError("Unexpected error during login.");

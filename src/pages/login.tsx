@@ -10,32 +10,36 @@ const Login = () => {
   const { login, profile, loading, error, session } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [formError, setFormError] = useState<string | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
   const navigate = useNavigate();
 
-  // Debugging info (can remove after bug resolved)
+  // Debug: log on every auth state change
   useEffect(() => {
-    console.log("Debug: login page: profile", profile, "loading", loading, "session", session, "error", error);
-  }, [profile, loading, session, error]);
+    console.log("[Login] profile:", profile, "loading:", loading, "session:", session, "error:", error, "formError:", formError, "timedOut:", timedOut);
+  }, [profile, loading, session, error, formError, timedOut]);
 
-  // Fallback: Fail loading after 6s to avoid infinite spinner (to help diagnose/fix)
+  // Fallback: Fail loading after 6s to avoid infinite spinner
   useEffect(() => {
     if (loading) {
       const t = setTimeout(() => {
+        setTimedOut(true);
         setFormError("Failed to load profile. Please try again or contact support.");
       }, 6000);
       return () => clearTimeout(t);
     }
+    setTimedOut(false);
   }, [loading]);
 
-  // Redirect if the profile is loaded and no loading, otherwise show errors
+  // Role-based redirect after login
   useEffect(() => {
-    if (profile?.role === "superadmin") navigate("/superadmin", { replace: true });
-    else if (profile?.role === "owner") navigate("/owner", { replace: true });
-    else if (profile?.role === "employee") navigate("/employee", { replace: true });
-    else if (!loading && session && !profile) {
+    if (!loading && profile && !formError && !timedOut) {
+      if (profile.role === "superadmin") navigate("/superadmin", { replace: true });
+      else if (profile.role === "owner") navigate("/owner", { replace: true });
+      else if (profile.role === "employee") navigate("/employee", { replace: true });
+    } else if (!loading && session && !profile && !formError && !timedOut) {
       setFormError("Profile not found. Please contact support.");
     }
-  }, [profile, loading, session, navigate]);
+  }, [profile, loading, session, navigate, formError, timedOut]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -49,7 +53,13 @@ const Login = () => {
       setFormError("Email and password are required.");
       return;
     }
-    await login(form.email, form.password);
+    try {
+      await login(form.email, form.password);
+      // Do not navigate here, let useEffect handle it when session/profile are ready
+    } catch (err: any) {
+      setFormError("Unexpected login error. Please try again.");
+      console.error("[Login] login error:", err);
+    }
   };
 
   return (
@@ -113,4 +123,3 @@ const Login = () => {
 };
 
 export default Login;
-
