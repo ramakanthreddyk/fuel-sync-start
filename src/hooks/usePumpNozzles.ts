@@ -8,12 +8,12 @@ export function usePumpNozzles(pumpId?: number) {
     queryFn: async () => {
       if (!pumpId) return [];
       const { data, error } = await supabase
-        .from("nozzles")
+        .from<any>("nozzles")
         .select("id, nozzle_number, fuel_type")
         .eq("pump_id", pumpId)
         .order("nozzle_number", { ascending: true });
       if (error) throw error;
-      return data || [];
+      return Array.isArray(data) ? data : [];
     },
     enabled: !!pumpId,
   });

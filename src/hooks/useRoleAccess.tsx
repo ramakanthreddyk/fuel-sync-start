@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/auth/useAuth';
 import { useMemo } from 'react';
 
@@ -36,7 +37,7 @@ export function useRoleAccess(): RoleAccess {
 
     // You may want to map real stations from another hook/service
     const role = profile.role;
-    const stations = []; // TODO: integrate with stations table if needed
+    const stations: StationAccess[] = []; // TODO: integrate with stations table if needed
 
     return {
       role: role ?? 'employee',

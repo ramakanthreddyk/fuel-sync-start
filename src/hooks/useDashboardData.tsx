@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useAuth } from "@/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,7 +136,7 @@ export const useDashboardData = () => {
         todaySales: summary.total_sales_today || 0,
         todayTender: summary.total_tender_today || 0,
         totalReadings: readingsCount || 0,
-        lastReading: (lastReadingData && lastReadingData.length > 0)
+        lastReading: (lastReadingData && Array.isArray(lastReadingData) && lastReadingData.length > 0 && !("error" in lastReadingData[0]))
           ? lastReadingData[0].created_at
           : null,
         pendingClosures: summary.pending_closure_count || 0,

@@ -38,7 +38,7 @@ export function useFuelPricesData() {
 
       const latestPrices = new Map<string, FuelPrice>();
 
-      (data as FuelPrice[])?.forEach((price) => {
+      (Array.isArray(data) ? data : []).forEach((price: FuelPrice) => {
         const key = `${price.station_id}-${price.fuel_type}`;
         if (!latestPrices.has(key)) {
           latestPrices.set(key, price);

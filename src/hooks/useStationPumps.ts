@@ -8,12 +8,12 @@ export function useStationPumps(stationId?: number) {
     queryFn: async () => {
       if (!stationId) return [];
       const { data, error } = await supabase
-        .from("pumps")
+        .from<any>("pumps")
         .select("id, pump_sno, name")
         .eq("station_id", stationId)
         .order("name", { ascending: true });
       if (error) throw error;
-      return data || [];
+      return Array.isArray(data) ? data : [];
     },
     enabled: !!stationId,
   });
