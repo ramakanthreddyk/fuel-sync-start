@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,8 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/auth/useAuth";
 import ProtectedRoute from "@/auth/ProtectedRoute";
-import Landing from "@/pages/landing";
-import Login from "@/pages/login";
+import Landing from "@/pages/landing"; // Use the CORRECT case, not "Landing"
+import Login from "@/pages/login";     // Use the CORRECT case, not "Login"
 import Setup from "@/pages/setup";
 import Superadmin from "@/pages/superadmin";
 import Owner from "@/pages/owner";
