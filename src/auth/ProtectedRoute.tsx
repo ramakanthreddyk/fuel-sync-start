@@ -8,14 +8,21 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ requiredRole }: ProtectedRouteProps) => {
-  const { session, profile } = useAuth();
+  const { session, profile, loading } = useAuth();
 
-  // Placeholder logic, roles/redirects to be implemented later
+  if (loading) {
+    // Loading spinner or placeholder
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <span className="text-muted-foreground text-lg">Checking permissions…</span>
+      </div>
+    );
+  }
   if (!session) {
     return <Navigate to="/login" replace />;
   }
   if (requiredRole && profile?.role !== requiredRole) {
-    // Send users to respective dashboards
+    // Redirect to role-appropriate dashboard
     if (profile?.role === "superadmin") return <Navigate to="/superadmin" replace />;
     if (profile?.role === "owner") return <Navigate to="/owner" replace />;
     if (profile?.role === "employee") return <Navigate to="/employee" replace />;
