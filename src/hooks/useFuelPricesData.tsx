@@ -24,7 +24,7 @@ export function useFuelPricesData() {
       }
 
       let query = supabase
-        .from<any>('fuel_prices')
+        .from<any, any>('fuel_prices')
         .select('*')
         .order('valid_from', { ascending: false });
 
@@ -38,10 +38,11 @@ export function useFuelPricesData() {
 
       const latestPrices = new Map<string, FuelPrice>();
 
-      (Array.isArray(data) ? data : []).forEach((price: FuelPrice) => {
+      (Array.isArray(data) ? data : []).forEach((price: any) => {
+        if (!price?.station_id || !price?.fuel_type) return;
         const key = `${price.station_id}-${price.fuel_type}`;
         if (!latestPrices.has(key)) {
-          latestPrices.set(key, price);
+          latestPrices.set(key, price as FuelPrice);
         }
       });
 

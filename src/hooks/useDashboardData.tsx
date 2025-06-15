@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useAuth } from "@/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -120,13 +121,13 @@ export const useDashboardData = () => {
 
       // Get total readings count
       const { count: readingsCount } = await supabase
-        .from<any>('ocr_readings')
+        .from<any, any>('ocr_readings')
         .select('*', { count: 'exact', head: true })
         .eq('station_id', currentStation.id);
 
       // Get last reading time
       const { data: lastReadingData } = await supabase
-        .from<any>('ocr_readings')
+        .from<any, any>('ocr_readings')
         .select('created_at')
         .eq('station_id', currentStation.id)
         .order('created_at', { ascending: false })
@@ -136,8 +137,8 @@ export const useDashboardData = () => {
         todaySales: summary.total_sales_today || 0,
         todayTender: summary.total_tender_today || 0,
         totalReadings: readingsCount || 0,
-        lastReading: (lastReadingData && Array.isArray(lastReadingData) && lastReadingData.length > 0 && !("error" in lastReadingData[0]))
-          ? lastReadingData[0].created_at
+        lastReading: (lastReadingData && Array.isArray(lastReadingData) && lastReadingData.length > 0)
+          ? (lastReadingData[0] as { created_at: string }).created_at
           : null,
         pendingClosures: summary.pending_closure_count || 0,
         trendsData: trends,

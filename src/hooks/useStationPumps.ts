@@ -8,7 +8,7 @@ export function useStationPumps(stationId?: number) {
     queryFn: async () => {
       if (!stationId) return [];
       const { data, error } = await supabase
-        .from<any>("pumps")
+        .from<any, any>("pumps")
         .select("id, pump_sno, name")
         .eq("station_id", stationId)
         .order("name", { ascending: true });

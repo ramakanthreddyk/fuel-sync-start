@@ -9,6 +9,7 @@ interface UserProfile {
 }
 
 interface AuthContextProps {
+  user: any;
   session: any;
   profile: UserProfile | null;
   login: (email: string, password: string) => Promise<void>;
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,9 +71,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data, error } = await supabase.auth.getSession();
       if (data?.session && mounted) {
         setSession(data.session);
+        setUser(data.session.user);
         await fetchProfile(data.session.user.id);
       } else {
         setSession(null);
+        setUser(null);
         setProfile(null);
       }
       setLoading(false);
@@ -82,9 +86,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
         setSession(session);
+        setUser(session.user);
         await fetchProfile(session.user.id);
       } else {
         setSession(null);
+        setUser(null);
         setProfile(null);
       }
       setLoading(false);
@@ -120,12 +126,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     await supabase.auth.signOut();
     setSession(null);
+    setUser(null);
     setProfile(null);
     setLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ session, profile, login, logout, loading, error }}>
+    <AuthContext.Provider value={{ user, session, profile, login, logout, loading, error }}>
       {children}
     </AuthContext.Provider>
   );

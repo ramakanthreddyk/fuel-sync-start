@@ -26,9 +26,9 @@ export function useActivityLogger() {
       // Use provided stationId or user's first (if available)
       let station_id = stationId ?? null;
 
-      // user_activity_log is a custom table, so use any
+      // user_activity_log is a custom table, so we use any here
       const { error } = await supabase
-        .from<any>("user_activity_log")
+        .from<any, any>("user_activity_log")
         .insert([
           {
             user_id: profile.id,
@@ -38,7 +38,6 @@ export function useActivityLogger() {
           },
         ]);
 
-      // Could optionally check the error and log if needed
       if (error) {
         console.error("Activity log error:", error);
       }
@@ -48,3 +47,4 @@ export function useActivityLogger() {
 
   return logActivity;
 }
+

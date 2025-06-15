@@ -30,7 +30,7 @@ export function usePumpsData() {
       }
 
       let query = supabase
-        .from<any>('pumps')
+        .from<any, any>('pumps')
         .select(`
           *,
           nozzles (

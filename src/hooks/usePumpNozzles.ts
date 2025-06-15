@@ -8,7 +8,7 @@ export function usePumpNozzles(pumpId?: number) {
     queryFn: async () => {
       if (!pumpId) return [];
       const { data, error } = await supabase
-        .from<any>("nozzles")
+        .from<any, any>("nozzles")
         .select("id, nozzle_number, fuel_type")
         .eq("pump_id", pumpId)
         .order("nozzle_number", { ascending: true });
