@@ -12,13 +12,27 @@ const Login = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Redirect if the profile is loaded
+  // Debugging info (can remove after bug resolved)
+  useEffect(() => {
+    console.log("Debug: login page: profile", profile, "loading", loading, "session", session, "error", error);
+  }, [profile, loading, session, error]);
+
+  // Fallback: Fail loading after 6s to avoid infinite spinner (to help diagnose/fix)
+  useEffect(() => {
+    if (loading) {
+      const t = setTimeout(() => {
+        setFormError("Failed to load profile. Please try again or contact support.");
+      }, 6000);
+      return () => clearTimeout(t);
+    }
+  }, [loading]);
+
+  // Redirect if the profile is loaded and no loading, otherwise show errors
   useEffect(() => {
     if (profile?.role === "superadmin") navigate("/superadmin", { replace: true });
     else if (profile?.role === "owner") navigate("/owner", { replace: true });
     else if (profile?.role === "employee") navigate("/employee", { replace: true });
     else if (!loading && session && !profile) {
-      // If loading ended, session exists but profile doesn't, probably profile fetch failed
       setFormError("Profile not found. Please contact support.");
     }
   }, [profile, loading, session, navigate]);
@@ -99,3 +113,4 @@ const Login = () => {
 };
 
 export default Login;
+

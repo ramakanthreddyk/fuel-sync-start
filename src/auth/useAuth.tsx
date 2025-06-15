@@ -34,28 +34,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, name, role")
-      .eq("id", userId)
-      .maybeSingle();
-    if (error || !data) {
-      setError("Profile not found. Please contact support.");
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("profiles")
+        .select("id, name, role")
+        .eq("id", userId)
+        .maybeSingle();
+      if (fetchError || !data) {
+        console.error("fetchProfile error", fetchError, "data", data);
+        setError("Profile not found. Please contact support.");
+        setProfile(null);
+        return null;
+      }
+      setProfile({
+        id: data.id,
+        name: data.name,
+        role: mapDbRoleToUserProfileRole(data.role),
+      });
+      setError(null);
+      return data;
+    } catch (err) {
+      setError("Failed to fetch user profile.");
       setProfile(null);
-      return;
+      console.error("Exception in fetchProfile", err);
+      return null;
     }
-    setProfile({
-      id: data.id,
-      name: data.name,
-      role: mapDbRoleToUserProfileRole(data.role),
-    });
-    setError(null);
   }, []);
 
   // Session & profile sync
   useEffect(() => {
     let mounted = true;
     const getSessionAndProfile = async () => {
+      setLoading(true);
       const { data, error } = await supabase.auth.getSession();
       if (data?.session && mounted) {
         setSession(data.session);
@@ -64,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(null);
         setProfile(null);
       }
+      setLoading(false);
     };
     getSessionAndProfile();
 
@@ -75,6 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(null);
         setProfile(null);
       }
+      setLoading(false);
     });
     return () => {
       mounted = false;
@@ -86,14 +98,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !data?.user) {
-      setError(error?.message || "Invalid login credentials.");
+    try {
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+      if (loginError || !data?.user) {
+        setError(loginError?.message || "Invalid login credentials.");
+        setLoading(false);
+        return;
+      }
+      await fetchProfile(data.user.id);
       setLoading(false);
-      return;
+    } catch (err) {
+      setError("Unexpected error during login.");
+      setLoading(false);
     }
-    await fetchProfile(data.user.id);
-    setLoading(false);
   };
 
   // LOGOUT
