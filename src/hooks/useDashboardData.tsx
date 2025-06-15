@@ -126,20 +126,23 @@ export const useDashboardData = () => {
         .eq('station_id', currentStation.id);
 
       // Get last reading time
-      const { data: lastReadingData } = await supabase
-        .from<any, any>('ocr_readings')
+      const lastReadingRes = await supabase
+        .from('ocr_readings')
         .select('created_at')
         .eq('station_id', currentStation.id)
         .order('created_at', { ascending: false })
         .limit(1);
 
+      let lastReading: string | null = null;
+      if (!lastReadingRes.error && Array.isArray(lastReadingRes.data) && lastReadingRes.data.length > 0 && lastReadingRes.data[0]?.created_at) {
+        lastReading = lastReadingRes.data[0].created_at;
+      }
+
       setData({
         todaySales: summary.total_sales_today || 0,
         todayTender: summary.total_tender_today || 0,
         totalReadings: readingsCount || 0,
-        lastReading: (lastReadingData && Array.isArray(lastReadingData) && lastReadingData.length > 0)
-          ? (lastReadingData[0] as { created_at: string }).created_at
-          : null,
+        lastReading: lastReading,
         pendingClosures: summary.pending_closure_count || 0,
         trendsData: trends,
         fuelPrices: summary.fuel_prices || {},

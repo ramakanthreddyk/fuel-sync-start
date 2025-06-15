@@ -30,7 +30,7 @@ export function usePumpsData() {
       }
 
       let query = supabase
-        .from<any, any>('pumps')
+        .from('pumps')
         .select(`
           *,
           nozzles (
@@ -48,8 +48,8 @@ export function usePumpsData() {
 
       const { data, error } = await query;
 
-      if (error) throw error;
-      return Array.isArray(data) ? (data as Pump[]) : [];
+      if (error || !Array.isArray(data)) return [];
+      return data;
     },
     enabled: canAccessAllStations || !!currentStation?.id,
   });

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/auth/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Building2, MapPin, Fuel, Users } from "lucide-react";
@@ -103,7 +103,7 @@ export default function AdminStations() {
     queryKey: ['owners'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('role', 'owner')
         .order('name');
@@ -243,7 +243,7 @@ export default function AdminStations() {
                 <Input
                   id="name"
                   value={newStation.name}
-                  onChange={(e) => setNewStation(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setNewStation(prev => ({ ...prev, name: e.target.value }))} 
                   placeholder="Green Valley IOCL"
                 />
               </div>
@@ -265,7 +265,7 @@ export default function AdminStations() {
                 <Input
                   id="address"
                   value={newStation.address}
-                  onChange={(e) => setNewStation(prev => ({ ...prev, address: e.target.value }))}
+                  onChange={(e) => setNewStation(prev => ({ ...prev, address: e.target.value }))} 
                   placeholder="123 Main Street, City, State, PIN"
                 />
               </div>

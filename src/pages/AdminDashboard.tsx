@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from "@/auth/useAuth";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Station, Plan } from '@/types/database';
@@ -33,8 +33,8 @@ export default function AdminDashboard() {
       setLoading(true);
 
       // Load all users (use correct type)
-      const { data: usersData } = await supabase
-        .from('users')
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 

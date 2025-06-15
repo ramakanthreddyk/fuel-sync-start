@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/auth/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Users, Settings, Trash2, Shield } from "lucide-react";
@@ -20,7 +20,7 @@ interface UserWithStations {
   role: 'superadmin' | 'owner' | 'employee';
   is_active: boolean;
   created_at: string;
-  stations?: Array<{ id: number; name: string; brand: string; address: string }>;
+  stations?: Array<{ id: number; name: string; brand: string; address: string }>[];
 }
 
 interface Station {
@@ -61,13 +61,13 @@ export default function AdminUsers() {
 
   // Fetch users - for employees get their station, for owners get their owned stations
   const { data: users, isLoading } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['profiles'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select(`
           *,
-          stations!users_station_id_fkey (id, name, brand, address)
+          stations!profiles_stations_fkey (id, name, brand, address)
         `)
         .order('created_at', { ascending: false });
 
@@ -105,7 +105,7 @@ export default function AdminUsers() {
       setIsAddUserOpen(false);
       setNewUser({ name: '', email: '', phone: '', role: 'employee', station_id: '' });
       toast({ title: "Invitation sent", description: "User invited. They must finish signup via email for their account to activate." });
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['profiles'] });
     },
     onError: (error: any) => {
       toast({
@@ -120,7 +120,7 @@ export default function AdminUsers() {
   const toggleUserStatusMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ is_active: isActive })
         .eq('id', userId)
         .select()
@@ -130,7 +130,7 @@ export default function AdminUsers() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['profiles'] });
       toast({
         title: "Success",
         description: "User status updated successfully",
@@ -218,7 +218,7 @@ export default function AdminUsers() {
                 <Input
                   id="name"
                   value={newUser.name}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))} 
                   placeholder="John Doe"
                 />
               </div>
@@ -228,7 +228,7 @@ export default function AdminUsers() {
                   id="email"
                   type="email"
                   value={newUser.email}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))} 
                   placeholder="john@example.com"
                 />
               </div>
@@ -237,7 +237,7 @@ export default function AdminUsers() {
                 <Input
                   id="phone"
                   value={newUser.phone}
-                  onChange={(e) => setNewUser(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, phone: e.target.value }))} 
                   placeholder="+91-9876543210"
                 />
               </div>
