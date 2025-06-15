@@ -1,46 +1,19 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/auth/useAuth";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
-  const { login, profile, loading, error, session } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [formError, setFormError] = useState<string | null>(null);
-  const [timedOut, setTimedOut] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
-  // Debug: log on every auth state change
-  useEffect(() => {
-    console.log("[Login] profile:", profile, "loading:", loading, "session:", session, "error:", error, "formError:", formError, "timedOut:", timedOut);
-  }, [profile, loading, session, error, formError, timedOut]);
-
-  // Fallback: Fail loading after 6s to avoid infinite spinner
-  useEffect(() => {
-    if (loading) {
-      const t = setTimeout(() => {
-        setTimedOut(true);
-        setFormError("Failed to load profile. Please try again or contact support.");
-      }, 6000);
-      return () => clearTimeout(t);
-    }
-    setTimedOut(false);
-  }, [loading]);
-
-  // Role-based redirect after login
-  useEffect(() => {
-    if (!loading && profile && !formError && !timedOut) {
-      if (profile.role === "superadmin") navigate("/superadmin", { replace: true });
-      else if (profile.role === "owner") navigate("/owner", { replace: true });
-      else if (profile.role === "employee") navigate("/employee", { replace: true });
-    } else if (!loading && session && !profile && !formError && !timedOut) {
-      setFormError("Profile not found. Please contact support.");
-    }
-  }, [profile, loading, session, navigate, formError, timedOut]);
-
+  // Clear error on input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setFormError(null);
@@ -48,18 +21,58 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setFormError(null);
+
+    // Validate input
     if (!form.email || !form.password) {
       setFormError("Email and password are required.");
+      setLoading(false);
       return;
     }
-    try {
-      await login(form.email, form.password);
-      // Do not navigate here, let useEffect handle it when session/profile are ready
-    } catch (err: any) {
-      setFormError("Unexpected login error. Please try again.");
-      console.error("[Login] login error:", err);
+
+    // 1. Authenticate
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.password,
+    });
+
+    if (signInError || !signInData.user) {
+      setFormError(signInError?.message || "Invalid login credentials.");
+      setLoading(false);
+      return;
     }
+
+    // 2. Fetch profile
+    const userId = signInData.user.id;
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, name, role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profileError || !profileData) {
+      setFormError(profileError?.message || "Profile not found. Please contact support.");
+      setLoading(false);
+      return;
+    }
+
+    // 3. Route based on role
+    let role = profileData.role;
+    // Map backend roles to frontend ones if needed here
+    if (role === "admin") role = "owner";
+    else if (role === "user") role = "employee";
+
+    if (role === "superadmin") {
+      navigate("/superadmin", { replace: true });
+    } else if (role === "owner") {
+      navigate("/owner", { replace: true });
+    } else if (role === "employee") {
+      navigate("/employee", { replace: true });
+    } else {
+      setFormError("Unknown or missing profile role. Please contact support.");
+    }
+    setLoading(false);
   };
 
   return (
@@ -95,9 +108,9 @@ const Login = () => {
               required
             />
           </div>
-          {(formError || error) && (
+          {formError && (
             <div className="text-destructive text-sm">
-              {formError || error}
+              {formError}
             </div>
           )}
           <Button
