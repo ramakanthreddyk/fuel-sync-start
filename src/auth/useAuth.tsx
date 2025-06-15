@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   id: string;
-  full_name: string | null;
-  email: string | null;
+  name: string | null;
   role: "superadmin" | "owner" | "employee" | null;
 }
 
@@ -30,9 +29,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, full_name, email, role")
+      .select("id, name, role")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
     if (error) {
       setError("Failed to fetch user profile.");
       setProfile(null);
@@ -107,4 +106,3 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
-
